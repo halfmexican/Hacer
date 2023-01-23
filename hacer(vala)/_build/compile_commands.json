@@ -1,0 +1,38 @@
+[
+  {
+    "directory": "/home/joshunter/Projects/hacer(vala)/_build",
+    "command": "valac -C --debug --debug --pkg json-glib-1.0 --pkg libadwaita-1 --pkg gtk4 --color=always --directory src/hacer.p --basedir ../src --gresources=../src/hacer.gresource.xml ../src/main.vala ../src/application.vala ../src/window.vala ../src/action_agenda_row.vala",
+    "file": "../src/main.vala",
+    "output": "src/hacer.p/main.c"
+  },
+  {
+    "directory": "/home/joshunter/Projects/hacer(vala)/_build",
+    "command": "ccache cc -Isrc/hacer.p -Isrc -I../src -I/usr/include/gtk-4.0 -I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -I/usr/include/sysprof-4 -I/usr/include/harfbuzz -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/libmount -I/usr/include/blkid -I/usr/include/fribidi -I/usr/include/cairo -I/usr/include/pixman-1 -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/graphene-1.0 -I/usr/lib/x86_64-linux-gnu/graphene-1.0/include -I/usr/include/libadwaita-1 -I/usr/include/json-glib-1.0 -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wextra -O0 -g -pthread -mfpmath=sse -msse -msse2 -mfpmath=sse -msse -msse2 -MD -MQ src/hacer.p/meson-generated_.._hacer-resources.c.o -MF src/hacer.p/meson-generated_.._hacer-resources.c.o.d -o src/hacer.p/meson-generated_.._hacer-resources.c.o -c src/hacer-resources.c",
+    "file": "src/hacer-resources.c",
+    "output": "src/hacer.p/meson-generated_.._hacer-resources.c.o"
+  },
+  {
+    "directory": "/home/joshunter/Projects/hacer(vala)/_build",
+    "command": "ccache cc -Isrc/hacer.p -Isrc -I../src -I/usr/include/gtk-4.0 -I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -I/usr/include/sysprof-4 -I/usr/include/harfbuzz -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/libmount -I/usr/include/blkid -I/usr/include/fribidi -I/usr/include/cairo -I/usr/include/pixman-1 -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/graphene-1.0 -I/usr/lib/x86_64-linux-gnu/graphene-1.0/include -I/usr/include/libadwaita-1 -I/usr/include/json-glib-1.0 -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -w -O0 -g -pthread -mfpmath=sse -msse -msse2 -mfpmath=sse -msse -msse2 -MD -MQ src/hacer.p/meson-generated_main.c.o -MF src/hacer.p/meson-generated_main.c.o.d -o src/hacer.p/meson-generated_main.c.o -c src/hacer.p/main.c",
+    "file": "src/hacer.p/main.c",
+    "output": "src/hacer.p/meson-generated_main.c.o"
+  },
+  {
+    "directory": "/home/joshunter/Projects/hacer(vala)/_build",
+    "command": "ccache cc -Isrc/hacer.p -Isrc -I../src -I/usr/include/gtk-4.0 -I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -I/usr/include/sysprof-4 -I/usr/include/harfbuzz -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/libmount -I/usr/include/blkid -I/usr/include/fribidi -I/usr/include/cairo -I/usr/include/pixman-1 -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/graphene-1.0 -I/usr/lib/x86_64-linux-gnu/graphene-1.0/include -I/usr/include/libadwaita-1 -I/usr/include/json-glib-1.0 -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -w -O0 -g -pthread -mfpmath=sse -msse -msse2 -mfpmath=sse -msse -msse2 -MD -MQ src/hacer.p/meson-generated_application.c.o -MF src/hacer.p/meson-generated_application.c.o.d -o src/hacer.p/meson-generated_application.c.o -c src/hacer.p/application.c",
+    "file": "src/hacer.p/application.c",
+    "output": "src/hacer.p/meson-generated_application.c.o"
+  },
+  {
+    "directory": "/home/joshunter/Projects/hacer(vala)/_build",
+    "command": "ccache cc -Isrc/hacer.p -Isrc -I../src -I/usr/include/gtk-4.0 -I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -I/usr/include/sysprof-4 -I/usr/include/harfbuzz -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/libmount -I/usr/include/blkid -I/usr/include/fribidi -I/usr/include/cairo -I/usr/include/pixman-1 -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/graphene-1.0 -I/usr/lib/x86_64-linux-gnu/graphene-1.0/include -I/usr/include/libadwaita-1 -I/usr/include/json-glib-1.0 -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -w -O0 -g -pthread -mfpmath=sse -msse -msse2 -mfpmath=sse -msse -msse2 -MD -MQ src/hacer.p/meson-generated_window.c.o -MF src/hacer.p/meson-generated_window.c.o.d -o src/hacer.p/meson-generated_window.c.o -c src/hacer.p/window.c",
+    "file": "src/hacer.p/window.c",
+    "output": "src/hacer.p/meson-generated_window.c.o"
+  },
+  {
+    "directory": "/home/joshunter/Projects/hacer(vala)/_build",
+    "command": "ccache cc -Isrc/hacer.p -Isrc -I../src -I/usr/include/gtk-4.0 -I/usr/include/pango-1.0 -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -I/usr/include/sysprof-4 -I/usr/include/harfbuzz -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/libmount -I/usr/include/blkid -I/usr/include/fribidi -I/usr/include/cairo -I/usr/include/pixman-1 -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/graphene-1.0 -I/usr/lib/x86_64-linux-gnu/graphene-1.0/include -I/usr/include/libadwaita-1 -I/usr/include/json-glib-1.0 -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -w -O0 -g -pthread -mfpmath=sse -msse -msse2 -mfpmath=sse -msse -msse2 -MD -MQ src/hacer.p/meson-generated_action_agenda_row.c.o -MF src/hacer.p/meson-generated_action_agenda_row.c.o.d -o src/hacer.p/meson-generated_action_agenda_row.c.o -c src/hacer.p/action_agenda_row.c",
+    "file": "src/hacer.p/action_agenda_row.c",
+    "output": "src/hacer.p/meson-generated_action_agenda_row.c.o"
+  }
+]
