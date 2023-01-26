@@ -38,7 +38,6 @@ namespace Hacer {
 
         public Window (Gtk.Application app) {
             GLib.Object (application: app);
-
             //////Connect Signals//////
             task_entry.activate.connect(on_enter_released);
             leaflet_forward.clicked.connect(show_task_view);
@@ -48,7 +47,6 @@ namespace Hacer {
             adw_leaflet.set_visible_child(task_view);//Default to showing tasks
             list_box_list.select_row(list_box_list.get_row_at_index(0)); //Default to show all tasks at startup
             _load_task_from_json();
-
         }
 
         public void on_enter_released(){
@@ -69,18 +67,44 @@ namespace Hacer {
             var item_row = new ActionAgendaRow(task_name, false, false, task_list);
             task_list.append(item_row);
             task_entry.set_text("");
- 			add_task();
+ 			add_task(task_name);
         }
 
-        public void add_task(){
+        public void add_task(string task_name){
+			///TODO:Use Json Builder/Generator
+			Json.Builder builder = new Json.Builder();
 
-			//TODO: Use Json Builder/Generator
+			builder.begin_object();
+			builder.set_member_name("task_name");
+			builder.add_string_value(task_name);
+			builder.end_object();
+
+			Json.Object task_node = builder.get_root().get_object();
+
+			// Generate a string
+			Json.Generator generator = new Json.Generator();
+
 			Json.Parser parser = new Json.Parser();
 			Json.Node node = new Json.Node(NodeType.OBJECT);
-            parser.load_from_file(Environment.get_user_data_dir() + "/tasks.json");
-            Json.Object root_object = parser.get_root().get_object();
+
+			try{
+				parser.load_from_file(Environment.get_user_data_dir() + "/tasks.json");
+			}
+			catch (Error e) {
+				print ("Error: %s\n", e.message);
+			}
+
+ 			Json.Object root_object = parser.get_root().get_object();
             Json.Array array = root_object.get_array_member("Tasks");
-			array.add_element(node);
+			array.add_object_element(task_node);
+
+			Json.Node fuck = root_object.get_member("Tasks");
+			generator.set_root(parser.get_root());
+			string str = generator.to_data(null);
+			print(str);
+
+
+
 
 		}
 
@@ -95,20 +119,19 @@ namespace Hacer {
 
 			// Create a file that can only be accessed by the current user:
              File file = File.new_for_path(Environment.get_user_data_dir() + "/tasks.json");
+
             try{
-				IOStream ios = file.create_readwrite (FileCreateFlags.PRIVATE);
-				size_t bytes_written;
-				OutputStream out_stream = ios.output_stream;
-				out_stream.write_all("""{"Tasks": []}""".data, out bytes_written);
+
 			}
 			catch (Error e) {
 				print ("Error: %s\n", e.message);
+
 			}
 
-			if(!file.query_exists()){
-				print("File '%s' does not exist.", file.get_path());
-                return;
-			}
+			//if(!file.query_exists()){
+			//	print("File '%s' does not exist.", file.get_path());
+            //    return;
+			//}
 
             //Don't fucking ask me
 			Json.Parser parser = new Json.Parser();
