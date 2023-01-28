@@ -32,8 +32,8 @@ namespace Hacer {
         [GtkChild]unowned ListBox list_box_list;
         [GtkChild]unowned Leaflet adw_leaflet;
         [GtkChild]unowned ActionRow all_tasks_row;
- 		[GtkChild]unowned ActionRow completed_tasks_row;
- 		[GtkChild]unowned ActionRow starred_tasks_row;
+ 		//[GtkChild]unowned ActionRow completed_tasks_row;
+ 		//[GtkChild]unowned ActionRow starred_tasks_row;
         //[GtkChild]unowned Clamp adw_clamp;
 
         public Window (Gtk.Application app) {
@@ -44,8 +44,10 @@ namespace Hacer {
             leaflet_back.clicked.connect(show_list_view);
             all_tasks_row.activated.connect(show_all_tasks);
             /////Initial Set-up//////
-            adw_leaflet.set_visible_child(task_view);//Default to showing tasks
-            list_box_list.select_row(list_box_list.get_row_at_index(0)); //Default to show all tasks at startup
+            //Default to showing tasks
+            adw_leaflet.set_visible_child(task_view);
+ 			//Default to show all tasks at startup
+            list_box_list.select_row(list_box_list.get_row_at_index(0));
             _load_task_from_json();
         }
 
@@ -64,48 +66,56 @@ namespace Hacer {
 
         private void _entry_add(string task_name){
             print("New Task: "+ task_name + "\n");
-            var item_row = new ActionAgendaRow(task_name, false, false, task_list);
-            task_list.append(item_row);
+            var agenda_row = new ActionAgendaRow(task_name, false, false, task_list);
+            task_list.append(agenda_row);
             task_entry.set_text("");
- 			add_task(task_name);
+ 			add_task(task_name, false, false);
         }
 
-        public void add_task(string task_name){
-			///TODO:Use Json Builder/Generator
-			Json.Builder builder = new Json.Builder();
+        public void add_task(string task_name, bool complete, bool starred){
+			try {
+				//Get the file interface
+				File file = File.new_for_path(Environment.get_user_data_dir() + "/tasks.json");
 
-			builder.begin_object();
-			builder.set_member_name("task_name");
-			builder.add_string_value(task_name);
-			builder.end_object();
+				// File Jazz
+				FileIOStream iostream = file.open_readwrite();
+				OutputStream o_stream = iostream.output_stream;
+				DataOutputStream do_stream = new DataOutputStream(o_stream);
 
-			Json.Object task_node = builder.get_root().get_object();
+				//Builds Json Object
+				Json.Builder builder = new Json.Builder();
+				builder.begin_object();
+				{
+					builder.set_member_name("task_name");
+					builder.add_string_value(task_name);
+					builder.set_member_name("complete");
+					builder.add_boolean_value(complete);
+					builder.set_member_name("starred");
+					builder.add_boolean_value(starred);
+				}
+				builder.end_object();
 
-			// Generate a string
-			Json.Generator generator = new Json.Generator();
+				//Give Reference for the Object we just made
+				Json.Object task_obj = builder.get_root().get_object();
 
-			Json.Parser parser = new Json.Parser();
-			Json.Node node = new Json.Node(NodeType.OBJECT);
+				//We create a Generator to get the data from the builder
+				//we create the Parser to get reference to the file
+				Json.Generator generator = new Json.Generator(){pretty = true};
+				Json.Parser parser = new Json.Parser();
 
-			try{
+				//Add our Task Object to the Json Array that exists in our file
 				parser.load_from_file(Environment.get_user_data_dir() + "/tasks.json");
+ 				Json.Array array = parser.get_root().get_object().get_array_member("Tasks");
+				array.add_object_element(task_obj);
+
+				//Gets the generated Json Tree as a string and write to file
+				generator.set_root(parser.get_root());
+				string str = generator.to_data(null);
+				do_stream.put_string(str);
 			}
-			catch (Error e) {
-				print ("Error: %s\n", e.message);
+			catch (Error e){
+				print(e.message);
 			}
-
- 			Json.Object root_object = parser.get_root().get_object();
-            Json.Array array = root_object.get_array_member("Tasks");
-			array.add_object_element(task_node);
-
-			Json.Node fuck = root_object.get_member("Tasks");
-			generator.set_root(parser.get_root());
-			string str = generator.to_data(null);
-			print(str);
-
-
-
-
 		}
 
         public void show_all_tasks(){
@@ -118,20 +128,16 @@ namespace Hacer {
             unowned bool starred = false;
 
 			// Create a file that can only be accessed by the current user:
-             File file = File.new_for_path(Environment.get_user_data_dir() + "/tasks.json");
+            File file = File.new_for_path(Environment.get_user_data_dir() + "/tasks.json");
 
-            try{
-
+			if(!file.query_exists()){
+				print("File '%s' does not exist.", file.get_path());
+				// Create a new file with this name
+            	var file_stream = file.create (FileCreateFlags.NONE);
 			}
-			catch (Error e) {
-				print ("Error: %s\n", e.message);
-
+			else {
+				print("File %s created", file.get_path());
 			}
-
-			//if(!file.query_exists()){
-			//	print("File '%s' does not exist.", file.get_path());
-            //    return;
-			//}
 
             //Don't fucking ask me
 			Json.Parser parser = new Json.Parser();
