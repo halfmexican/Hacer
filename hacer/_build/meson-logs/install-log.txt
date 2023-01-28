@@ -1,0 +1,8 @@
+# List of files installed by Meson
+# Does not contain files installed by custom scripts.
+/app/share/applications/com.github.halfmexican.hacer.desktop
+/app/share/appdata/com.github.halfmexican.hacer.appdata.xml
+/app/bin/hacer
+/app/share/glib-2.0/schemas/com.github.halfmexican.hacer.gschema.xml
+/app/share/icons/hicolor/scalable/apps/com.github.halfmexican.hacer.svg
+/app/share/icons/hicolor/symbolic/apps/com.github.halfmexican.hacer-symbolic.svg
