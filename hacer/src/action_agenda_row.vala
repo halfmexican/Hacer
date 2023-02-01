@@ -8,12 +8,14 @@ namespace Hacer {
         [GtkChild] private unowned Button edit_button;
         [GtkChild] private unowned EditableLabel edit_label;
 
+        File data_file = File.new_for_path(Environment.get_user_data_dir() + "/tasks.json");
         ListBox parent_list_box;
         string task_name;
         bool starred;
  		bool completed;
-
-        public ActionAgendaRow(string task_name, bool completed, bool starred, ListBox parent_list_box){
+        int64 id;
+        
+        public ActionAgendaRow(string task_name, int64 id ,bool completed, bool starred, ListBox parent_list_box){
 
             /////Initialization//////
             this.parent_list_box = parent_list_box;
@@ -21,6 +23,7 @@ namespace Hacer {
             this.set_title(task_name);
             this.starred = starred;
  			this.completed = completed;
+            this.id = id;
 
             //////Connecting Signals//////
             this.activated.connect(show_edit_button);
