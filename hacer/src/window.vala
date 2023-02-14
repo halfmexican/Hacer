@@ -1,6 +1,6 @@
 /* window.vala
  *
- * Copyright 2022 Jose Hunter
+ * Copyright 2022-2023 Jose Hunter
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,6 +37,8 @@ namespace Hacer {
         // [GtkChild]unowned Clamp adw_clamp;
 
         File data_file = File.new_for_path(Environment.get_user_data_dir() + "/tasks.json");
+        Json.Parser parser;
+        Json.Array array;
         unowned int64 next_id = 0;
 
         public Window(Gtk.Application app) {
@@ -52,17 +54,19 @@ namespace Hacer {
             adw_leaflet.set_visible_child(task_view);
             // Default to show all tasks at startup
             list_box_list.select_row(list_box_list.get_row_at_index(0));
+            parser = new Json.Parser();
 
             if (!data_file.query_exists()) {
-                print("File '%s' does not exist.", data_file.get_path());
+                print("File '%s' does not exist.\n", data_file.get_path());
                 // Create a new file with this name
-                //TODO: when creating new file use builder to create a blank array
+                // TODO: when creating new file use builder to create a blank array
                 var file_stream = data_file.create(FileCreateFlags.NONE);
+                _init_new_file();
             } else {
-                print("File %s created", data_file.get_path());
+                print("File %s created\n", data_file.get_path());
             }
-            
-            _load_task_from_json();
+
+            _load_tasks_from_json();
         }
 
         public void on_enter_released() {
@@ -79,18 +83,23 @@ namespace Hacer {
         }
 
         private void _entry_add(string task_name) {
-            print("New Task: " + task_name + "\n");
-            var agenda_row = new ActionAgendaRow(task_name, next_id, false, false, task_list);
-            task_list.append(agenda_row);
+            string sanitized_name = Markup.escape_text(task_name);
+
+            var agenda_row = new ActionAgendaRow(sanitized_name, next_id, false, false);
+            add_task(agenda_row);
+            save_task(task_name, next_id, false, false);
+            print("New Task: " + task_name + "  id: %s" + "\n", next_id.to_string());
             task_entry.set_text("");
-            add_task(task_name, next_id, false, false);
             next_id++;
+
+            // connect signals
+            agenda_row.removetask.connect(remove_task);
         }
 
-        //TODO:Use an ActionAgendaRow instead of passing a bunch of parameters like this
-        public void add_task(string task_name, int64 id, bool complete, bool starred) {
+        // TODO:Use an ActionAgendaRow instead of passing a bunch of parameters like this
+        public void save_task(string task_name, int64 id, bool complete, bool starred) {
             try {
-                
+
                 // File Jazz
                 FileIOStream iostream = data_file.open_readwrite();
                 OutputStream o_stream = iostream.output_stream;
@@ -133,11 +142,47 @@ namespace Hacer {
             }
         }
 
+        public void remove_task(int64 task_id) {
+            Json.Parser parser = new Json.Parser();
+            // Add our Task Object to the Json Array that exists in our file
+            parser.load_from_file(data_file.get_path());
+            array = parser.get_root().get_object().get_array_member("Tasks");
+
+            for (int i = 0; i < array.get_length(); ++i) {
+                var obj = array.get_element(i).get_object();
+
+                if (obj.get_int_member("id") == task_id) {
+                    array.remove_element(i);
+
+                    try {
+                        // File Jazz
+                        FileIOStream iostream = data_file.open_readwrite();
+                        FileOutputStream os = iostream.output_stream as FileOutputStream;
+
+                        Json.Generator generator = new Json.Generator() { pretty = true };;
+                        generator.set_root(parser.get_root());
+                        string str = generator.to_data(null);
+                        data_file.replace_contents(str.data, null, false, FileCreateFlags.NONE, null);
+
+                        // os.write(str.data);
+                    } catch (Error e) {
+                        print("aaa");
+                    }
+                }
+            }
+        }
+
         public void show_all_tasks() {
             // _load_task_from_json();
         }
 
-        private void _load_task_from_json() {
+        public void add_task(ActionAgendaRow agenda_row) {
+            agenda_row.removetask.connect(this.remove_task);
+            task_list.append(agenda_row);
+            agenda_row.connect_parent_list_box();
+        }
+
+        private void _load_tasks_from_json() {
             unowned string task_name = null;
             unowned bool complete = false;
             unowned bool starred = false;
@@ -154,9 +199,9 @@ namespace Hacer {
                     switch (members) {
                     case "id":
                         obj_id = obj.get_int_member("id");
-                        //always set next id to the current highest plus 1
-                        if(next_id < obj_id)
-                            next_id = ++obj_id;
+                        // always set next id to the current highest plus 1
+                        if (next_id < obj_id)
+                            next_id = (1 + obj_id);
                         break;
                     case "task_name":
                         task_name = obj.get_string_member("task_name");
@@ -170,10 +215,12 @@ namespace Hacer {
                     }
                 }
 
-                print("id:" + int64.FORMAT, next_id);
-                var item_row = new ActionAgendaRow(task_name, obj_id ,complete, starred, task_list);
-                task_list.append(item_row);
+                var agenda_row = new ActionAgendaRow(task_name, obj_id, complete, starred);
+                add_task(agenda_row);
             }
+        }
+
+        private void _init_new_file() {
         }
     }
 }
