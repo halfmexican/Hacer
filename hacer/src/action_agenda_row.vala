@@ -16,7 +16,9 @@ namespace Hacer {
         bool completed;
         int64 id;
 
-        public signal void removetask(int64 n);
+        public signal void removetask(int64 id);
+ 		public signal void startask(int64 id, bool starred);
+ 		public signal void completetask(int64 id, bool completed);
 
         public ActionAgendaRow(string task_name, int64 id, bool completed, bool starred) {
 
@@ -68,6 +70,9 @@ namespace Hacer {
                 star_button.remove_css_class("suggested-action");
                 starred = false;
             }
+            
+            this.startask(this.id, this.starred);
+            
         }
 
         public void show_edit_button() {
@@ -110,12 +115,16 @@ namespace Hacer {
 
             if (!check_button.get_active()) {
                 this.set_title(task_name);
+ 				this.completed = false;
             } else {
                 this.strikethrough();
                 this.completed = true;
             }
+            
+            this.completetask(this.id, this.completed);
         }
 
+		//TODO: Make this save the new name
         public void change_task_name() {
             edit_label.hide();
             edit_button.hide();

@@ -53,9 +53,9 @@ namespace Hacer {
             // Default to showing tasks
             adw_leaflet.set_visible_child(task_view);
             // Default to show all tasks at startup
-            list_box_list.select_row(list_box_list.get_row_at_index(0));
-            parser = new Json.Parser();
-
+            list_box_list.select_row(all_tasks_row);
+            Json.Parser parser = new Json.Parser();
+        
             if (!data_file.query_exists()) {
                 print("File '%s' does not exist.\n", data_file.get_path());
                 // Create a new file with this name
@@ -63,7 +63,7 @@ namespace Hacer {
                 var file_stream = data_file.create(FileCreateFlags.NONE);
                 _init_new_file();
             } else {
-                print("File %s created\n", data_file.get_path());
+                print("File %s referenced\n", data_file.get_path());
             }
 
             _load_tasks_from_json();
@@ -84,22 +84,17 @@ namespace Hacer {
 
         private void _entry_add(string task_name) {
             string sanitized_name = Markup.escape_text(task_name);
-
             var agenda_row = new ActionAgendaRow(sanitized_name, next_id, false, false);
             add_task(agenda_row);
             save_task(task_name, next_id, false, false);
             print("New Task: " + task_name + "  id: %s" + "\n", next_id.to_string());
             task_entry.set_text("");
             next_id++;
-
-            // connect signals
-            agenda_row.removetask.connect(remove_task);
         }
 
         // TODO:Use an ActionAgendaRow instead of passing a bunch of parameters like this
         public void save_task(string task_name, int64 id, bool complete, bool starred) {
             try {
-
                 // File Jazz
                 FileIOStream iostream = data_file.open_readwrite();
                 OutputStream o_stream = iostream.output_stream;
@@ -141,6 +136,9 @@ namespace Hacer {
                 print(e.message);
             }
         }
+        
+        //TODO: Make a File Utils Class to handled all these searches instead of boilerplate
+        // 
 
         public void remove_task(int64 task_id) {
             Json.Parser parser = new Json.Parser();
@@ -166,7 +164,67 @@ namespace Hacer {
 
                         // os.write(str.data);
                     } catch (Error e) {
-                        print("aaa");
+                        print(e.message);
+                    }
+                }
+            }
+        }
+        
+         public void star_task(int64 task_id, bool starred) {
+            Json.Parser parser = new Json.Parser();
+            // Add our Task Object to the Json Array that exists in our file
+            parser.load_from_file(data_file.get_path());
+            array = parser.get_root().get_object().get_array_member("Tasks");
+
+            for (int i = 0; i < array.get_length(); ++i) {
+                var obj = array.get_element(i).get_object();
+
+                if (obj.get_int_member("id") == task_id) {
+                	obj.set_boolean_member("starred", starred);
+
+                    try {
+                        // File Jazz
+                        FileIOStream iostream = data_file.open_readwrite();
+                        FileOutputStream os = iostream.output_stream as FileOutputStream;
+
+                        Json.Generator generator = new Json.Generator() { pretty = true };;
+                        generator.set_root(parser.get_root());
+                        string str = generator.to_data(null);
+                        data_file.replace_contents(str.data, null, false, FileCreateFlags.NONE, null);
+
+                        // os.write(str.data);
+                    } catch (Error e) {
+                        print(e.message);
+                    }
+                }
+            }
+        }
+        
+         public void complete_task(int64 task_id, bool complete) {
+            Json.Parser parser = new Json.Parser();
+            // Add our Task Object to the Json Array that exists in our file
+            parser.load_from_file(data_file.get_path());
+            array = parser.get_root().get_object().get_array_member("Tasks");
+
+            for (int i = 0; i < array.get_length(); ++i) {
+                var obj = array.get_element(i).get_object();
+
+                if (obj.get_int_member("id") == task_id) {
+                	obj.set_boolean_member("complete", complete);
+
+                    try {
+                        // File Jazz
+                        FileIOStream iostream = data_file.open_readwrite();
+                        FileOutputStream os = iostream.output_stream as FileOutputStream;
+
+                        Json.Generator generator = new Json.Generator() { pretty = true };;
+                        generator.set_root(parser.get_root());
+                        string str = generator.to_data(null);
+                        data_file.replace_contents(str.data, null, false, FileCreateFlags.NONE, null);
+
+                        // os.write(str.data);
+                    } catch (Error e) {
+                        print(e.message);
                     }
                 }
             }
@@ -180,14 +238,18 @@ namespace Hacer {
             agenda_row.removetask.connect(this.remove_task);
             task_list.append(agenda_row);
             agenda_row.connect_parent_list_box();
+ 			// connect signals
+            agenda_row.removetask.connect(remove_task);
+ 			agenda_row.startask.connect(star_task);
+ 			agenda_row.completetask.connect(complete_task);
         }
 
         private void _load_tasks_from_json() {
-            unowned string task_name = null;
-            unowned bool complete = false;
-            unowned bool starred = false;
+           	string task_name = null;
+            bool complete = false;
+            bool starred = false;
             int64 obj_id = 0;
-            // Don't fucking ask me
+            //Don't fucking ask me
             Json.Parser parser = new Json.Parser();
             parser.load_from_file(data_file.get_path());
             Json.Object root_object = parser.get_root().get_object();
@@ -204,8 +266,9 @@ namespace Hacer {
                             next_id = (1 + obj_id);
                         break;
                     case "task_name":
-                        task_name = obj.get_string_member("task_name");
-                        break;
+ 						string temp = obj.get_string_member("task_name");
+ 						task_name =  Markup.escape_text(temp);
+ 						break;
                     case "complete":
                         complete = obj.get_boolean_member("complete");
                         break;
@@ -221,6 +284,11 @@ namespace Hacer {
         }
 
         private void _init_new_file() {
+			// Builds Json Object
+			string file_template = """{"Tasks" : []}""";
+          	data_file.replace_contents(file_template.data, null, false, FileCreateFlags.NONE, null);
+ 			print("\nNew file Created at %s from template", data_file.get_path());
+ 		
         }
     }
 }
