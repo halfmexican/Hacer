@@ -22,7 +22,6 @@ using Gtk, Adw, Json;
 namespace Hacer {
     [GtkTemplate(ui = "/com/github/halfmexican/hacer/window.ui")]
     public class Window : Adw.ApplicationWindow {
-
         [GtkChild] unowned Entry task_entry;
         [GtkChild] unowned ListBox task_list;
         [GtkChild] unowned Button leaflet_forward;
@@ -32,13 +31,14 @@ namespace Hacer {
         [GtkChild] unowned ListBox list_box_list;
         [GtkChild] unowned Leaflet adw_leaflet;
         [GtkChild] unowned ActionRow all_tasks_row;
-        // [GtkChild]unowned ActionRow completed_tasks_row;
-        // [GtkChild]unowned ActionRow starred_tasks_row;
-        // [GtkChild]unowned Clamp adw_clamp;
+        [GtkChild]unowned ActionRow completed_tasks_row;
+        //[GtkChild]unowned ActionRow starred_tasks_row;
+        //[GtkChild]unowned Clamp adw_clamp;
 
         File data_file = File.new_for_path(Environment.get_user_data_dir() + "/tasks.json");
         Json.Parser parser;
         Json.Array array;
+ 		Utils utils;
         unowned int64 next_id = 0;
 
         public Window(Gtk.Application app) {
@@ -47,19 +47,21 @@ namespace Hacer {
             task_entry.activate.connect(on_enter_released);
             leaflet_forward.clicked.connect(show_task_view);
             leaflet_back.clicked.connect(show_list_view);
-            all_tasks_row.activated.connect(show_all_tasks);
+            //all_tasks_row.activated.connect(show_all_tasks);
 
             /////Initial Set-up//////
             // Default to showing tasks
             adw_leaflet.set_visible_child(task_view);
             // Default to show all tasks at startup
             list_box_list.select_row(all_tasks_row);
-            Json.Parser parser = new Json.Parser();
+            parser = new Json.Parser();
+        	utils = new Hacer.Utils();
+        
         
             if (!data_file.query_exists()) {
                 print("File '%s' does not exist.\n", data_file.get_path());
                 // Create a new file with this name
-                // TODO: when creating new file use builder to create a blank array
+                // TODOnt: when creating new file use builder to create a blank array
                 var file_stream = data_file.create(FileCreateFlags.NONE);
                 _init_new_file();
             } else {
@@ -137,9 +139,6 @@ namespace Hacer {
             }
         }
         
-        //TODO: Make a File Utils Class to handled all these searches instead of boilerplate
-        // 
-
         public void remove_task(int64 task_id) {
             Json.Parser parser = new Json.Parser();
             // Add our Task Object to the Json Array that exists in our file
@@ -170,69 +169,84 @@ namespace Hacer {
             }
         }
         
-         public void star_task(int64 task_id, bool starred) {
-            Json.Parser parser = new Json.Parser();
+        public void star_task(int64 task_id, bool starred){
+		 
             // Add our Task Object to the Json Array that exists in our file
+            Json.Parser parser = new Json.Parser();
             parser.load_from_file(data_file.get_path());
+ 
+ 			//Get the array of tasks from the JSON data
             array = parser.get_root().get_object().get_array_member("Tasks");
-
-            for (int i = 0; i < array.get_length(); ++i) {
-                var obj = array.get_element(i).get_object();
-
-                if (obj.get_int_member("id") == task_id) {
-                	obj.set_boolean_member("starred", starred);
-
-                    try {
-                        // File Jazz
-                        FileIOStream iostream = data_file.open_readwrite();
-                        FileOutputStream os = iostream.output_stream as FileOutputStream;
-
-                        Json.Generator generator = new Json.Generator() { pretty = true };;
-                        generator.set_root(parser.get_root());
-                        string str = generator.to_data(null);
-                        data_file.replace_contents(str.data, null, false, FileCreateFlags.NONE, null);
-
-                        // os.write(str.data);
-                    } catch (Error e) {
-                        print(e.message);
-                    }
-                }
+ 			
+ 			//retrieve the object index from the array based on id
+ 			uint obj_index  = Utils.binary_search_json_array(array, task_id);
+			
+			//Get the task object and update its "starred" property
+			Json.Object task_obj = array.get_element(obj_index).get_object();
+			task_obj.set_boolean_member("starred", starred);
+		
+			try {
+                // File Jazz
+				FileIOStream iostream = data_file.open_readwrite();
+				Json.Generator generator = new Json.Generator() { pretty = true };;
+				generator.set_root(parser.get_root());
+				string str = generator.to_data(null);
+				data_file.replace_contents(str.data, null, false, FileCreateFlags.NONE, null);
+			
+            } catch (Error e) {
+                    print(e.message);
             }
-        }
-        
+		}
+		
          public void complete_task(int64 task_id, bool complete) {
+			// Add our Task Object to the Json Array that exists in our file
             Json.Parser parser = new Json.Parser();
-            // Add our Task Object to the Json Array that exists in our file
+            parser.load_from_file(data_file.get_path());
+ 			
+            array = parser.get_root().get_object().get_array_member("Tasks");
+ 			
+ 			uint obj_index  = Utils.binary_search_json_array(array, task_id);
+			
+			Json.Object task_obj = array.get_element(obj_index).get_object();
+			task_obj.set_boolean_member("complete", complete);
+		
+			try {
+                // File Jazz
+				FileIOStream iostream = data_file.open_readwrite();
+				Json.Generator generator = new Json.Generator() { pretty = true };;
+				generator.set_root(parser.get_root());
+				string str = generator.to_data(null);
+				data_file.replace_contents(str.data, null, false, FileCreateFlags.NONE, null);
+            } catch (Error e) {
+                    print(e.message);
+            }
+      	}
+      	
+      	public void change_task_name(int64 task_id, string task_name){
+			Json.Parser parser = new Json.Parser();
             parser.load_from_file(data_file.get_path());
             array = parser.get_root().get_object().get_array_member("Tasks");
-
-            for (int i = 0; i < array.get_length(); ++i) {
-                var obj = array.get_element(i).get_object();
-
-                if (obj.get_int_member("id") == task_id) {
-                	obj.set_boolean_member("complete", complete);
-
-                    try {
-                        // File Jazz
-                        FileIOStream iostream = data_file.open_readwrite();
-                        FileOutputStream os = iostream.output_stream as FileOutputStream;
-
-                        Json.Generator generator = new Json.Generator() { pretty = true };;
-                        generator.set_root(parser.get_root());
-                        string str = generator.to_data(null);
-                        data_file.replace_contents(str.data, null, false, FileCreateFlags.NONE, null);
-
-                        // os.write(str.data);
-                    } catch (Error e) {
-                        print(e.message);
-                    }
-                }
+			uint obj_index = Utils.binary_search_json_array(array, task_id);
+			
+			Json.Object task_obj = array.get_element(obj_index).get_object();
+			task_obj.set_string_member("task_name", task_name);
+			
+			try {
+                // File Jazz
+				FileIOStream iostream = data_file.open_readwrite();
+				FileOutputStream os = iostream.output_stream as FileOutputStream;
+				Json.Generator generator = new Json.Generator() { pretty = true };;
+				generator.set_root(parser.get_root());
+				string str = generator.to_data(null);
+				data_file.replace_contents(str.data, null, false, FileCreateFlags.NONE, null);
+			
+            	// os.write(str.data);
+            } catch (Error e) {
+                    print(e.message);
             }
-        }
+		}
 
-        public void show_all_tasks() {
-            // _load_task_from_json();
-        }
+     
 
         public void add_task(ActionAgendaRow agenda_row) {
             agenda_row.removetask.connect(this.remove_task);
@@ -242,6 +256,7 @@ namespace Hacer {
             agenda_row.removetask.connect(remove_task);
  			agenda_row.startask.connect(star_task);
  			agenda_row.completetask.connect(complete_task);
+			agenda_row.changename.connect(change_task_name);
         }
 
         private void _load_tasks_from_json() {
@@ -287,8 +302,9 @@ namespace Hacer {
 			// Builds Json Object
 			string file_template = """{"Tasks" : []}""";
           	data_file.replace_contents(file_template.data, null, false, FileCreateFlags.NONE, null);
- 			print("\nNew file Created at %s from template", data_file.get_path());
+ 			print("New file Created at %s from template\n", data_file.get_path());
  		
         }
     }
 }
+

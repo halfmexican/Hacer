@@ -139,7 +139,7 @@
 						</child>
 						<child>
 							<object class="GtkScrolledWindow">
-								<property name ="min-content-height">400</property>
+								<property name ="min-content-height">200</property>
 								<child>
 									<object class="GtkListBox" id="task_list">
 										<property name="margin-bottom">0</property>

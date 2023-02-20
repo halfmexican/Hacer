@@ -2,7 +2,8 @@ hacer_sources = [
   'main.vala',
   'application.vala',
   'window.vala',
-  'action_agenda_row.vala'
+  'actionAgendaRow.vala',
+  'utils.vala'
 ]
 
 hacer_deps = [
