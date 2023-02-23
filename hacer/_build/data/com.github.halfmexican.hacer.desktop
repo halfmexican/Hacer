@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=hacer
-Exec=hacer
-Icon=com.github.halfmexican.hacer
-Terminal=false
-Type=Application
-Categories=GTK;
-StartupNotify=true
