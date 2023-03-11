@@ -12,28 +12,29 @@ namespace Hacer {
         ListBox parent_list_box;
         Json.Parser parser;
         string task_name;
-        bool starred;
-        bool completed;
+        //TODO: getter and setter
+        public bool starred;
+        public bool completed;
         int64 id;
 
-        public signal void removetask(int64 id);
- 		public signal void startask(int64 id, bool starred);
- 		public signal void completetask(int64 id, bool completed);
- 		public signal void changename(int64 id, string name);
+        public signal void removed_task(int64 id);
+ 		public signal void starred_task(int64 id, bool starred);
+ 		public signal void completed_task(int64 id, bool completed);
+ 		public signal void changed_name(int64 id, string name);
 
         public ActionAgendaRow(string task_name, int64 id, bool completed, bool starred) {
 
             /////Initialization//////
-            this.parent_list_box;
             this.task_name = task_name;
             this.set_title(task_name);
+ 			this.edit_label.set_text(this.task_name);
             this.starred = starred;
             this.completed = completed;
             this.id = id;
             parser = new Json.Parser();
 
             //////Connecting Signals//////
-            this.activated.connect(show_edit_button);
+            this.activated.connect(show_editable_label);
             check_button.toggled.connect(complete_task);
             trash_button.clicked.connect(remove_task);
             star_button.toggled.connect(star_task);
@@ -49,13 +50,12 @@ namespace Hacer {
 
         public void check_selection(ListBoxRow? row) {
             if (row != this) {
-                edit_button.hide();
+    			change_task_name();
             }
         }
 
         public void remove_task() {
-
-            this.removetask(this.id);
+            this.removed_task(this.id);
             ListBox task_list = this.get_parent() as ListBox;
             task_list.remove(this);
             // window.remove_task_id(this.id);
@@ -71,21 +71,11 @@ namespace Hacer {
                 star_button.remove_css_class("suggested-action");
                 starred = false;
             }
-            
-            this.startask(this.id, this.starred);
-            
-        }
-
-        public void show_edit_button() {
-            // only shows the button if it's not visible
-            if (!edit_button.visible) {
-                edit_button.show();
-            } else {
-                edit_button.hide();
-            }
+            this.starred_task(this.id, this.starred);
         }
 
         public void show_editable_label() {
+            this.add_css_class("agenda-row");
             this.set_title(" ");
             string unescaped_title = this.task_name.replace("&amp;", "&")
                  .replace("&lt;", "<")
@@ -98,7 +88,6 @@ namespace Hacer {
             edit_label.show();
             edit_label.grab_focus();
             edit_label.start_editing();
-
             // Connect the delegate signal so we know when to update title
             var gtk_text = edit_label.get_delegate() as Text;
             gtk_text.activate.connect(change_task_name);
@@ -122,15 +111,16 @@ namespace Hacer {
                 this.completed = true;
             }
             
-            this.completetask(this.id, this.completed);
+            this.completed_task(this.id, this.completed);
         }
 
 		//TODO: Make this save the new name
         public void change_task_name() {
+			this.remove_css_class("agenda-row");
             edit_label.hide();
             edit_button.hide();
             task_name = Markup.escape_text(edit_label.get_text());
- 			this.changename(id, task_name) ;
+ 			this.changed_name(id, task_name) ;
             if (!check_button.get_active()) {
                 this.set_title(task_name);
             } else {
@@ -144,3 +134,4 @@ namespace Hacer {
         }
     }
 }
+

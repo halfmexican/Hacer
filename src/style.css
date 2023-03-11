@@ -1,3 +1,13 @@
 text .strike{
   text-decoration: line-through;
 }
+
+.agenda-row{
+  background-color: transparent;
+}
+
+.row-title{
+
+margin-bottom: -6px;
+
+}

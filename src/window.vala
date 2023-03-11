@@ -22,6 +22,7 @@ using Gtk, Adw, Json;
 namespace Hacer {
     [GtkTemplate(ui = "/com/github/halfmexican/hacer/window.ui")]
     public class Window : Adw.ApplicationWindow {
+        [GtkChild] unowned Adw.WindowTitle task_window_title;
         [GtkChild] unowned Entry task_entry;
         [GtkChild] unowned ListBox task_list;
         [GtkChild] unowned Button leaflet_forward;
@@ -31,14 +32,16 @@ namespace Hacer {
         [GtkChild] unowned ListBox list_box_list;
         [GtkChild] unowned Leaflet adw_leaflet;
         [GtkChild] unowned ActionRow all_tasks_row;
-        [GtkChild]unowned ActionRow completed_tasks_row;
-        //[GtkChild]unowned ActionRow starred_tasks_row;
-        //[GtkChild]unowned Clamp adw_clamp;
+        [GtkChild] unowned ActionRow completed_tasks_row;
+        [GtkChild] unowned ActionRow starred_tasks_row;
+        [GtkChild] unowned Clamp adw_clamp;
+        [GtkChild] unowned Revealer task_label_revealer;
 
         File data_file = File.new_for_path(Environment.get_user_data_dir() + "/tasks.json");
         Json.Parser parser;
         Json.Array array;
  		Utils utils;
+ 		uint timeout_id;
         unowned int64 next_id = 0;
 
         public Window(Gtk.Application app) {
@@ -47,7 +50,9 @@ namespace Hacer {
             task_entry.activate.connect(on_enter_released);
             leaflet_forward.clicked.connect(show_task_view);
             leaflet_back.clicked.connect(show_list_view);
-            //all_tasks_row.activated.connect(show_all_tasks);
+            all_tasks_row.activated.connect(show_all_tasks);
+            completed_tasks_row.activated.connect(show_completed_tasks);
+            starred_tasks_row.activated.connect(show_starred_tasks);
 
             /////Initial Set-up//////
             // Default to showing tasks
@@ -56,7 +61,6 @@ namespace Hacer {
             list_box_list.select_row(all_tasks_row);
             parser = new Json.Parser();
         	utils = new Hacer.Utils();
-        
         
             if (!data_file.query_exists()) {
                 print("File '%s' does not exist.\n", data_file.get_path());
@@ -69,6 +73,10 @@ namespace Hacer {
             }
 
             _load_tasks_from_json();
+
+			timeout_id = Timeout.add_full(1, 500, ()=>{
+				this._window_shit();
+				return true;});
         }
 
         public void on_enter_released() {
@@ -83,6 +91,43 @@ namespace Hacer {
         public void show_list_view() {
             adw_leaflet.set_visible_child(list_view);
         }
+
+         public void show_all_tasks(){
+            task_list.invalidate_filter();
+            task_list.set_filter_func(all_filter);
+        }
+
+        public void show_completed_tasks(){
+            task_list.invalidate_filter();
+            task_list.set_filter_func(completed_filter);
+        }
+
+        public void show_starred_tasks(){
+            task_list.invalidate_filter();
+            task_list.set_filter_func(starred_filter);
+        }
+
+        private bool all_filter(){
+            return true;
+       }
+
+        private bool completed_filter(Gtk.ListBoxRow row){
+            var agenda_row = (ActionAgendaRow) row;
+
+            if(agenda_row.completed)
+                return true;
+
+            return false;
+        }
+
+        private bool starred_filter(Gtk.ListBoxRow row){
+            var agenda_row = row as ActionAgendaRow;
+
+            if(agenda_row.starred)
+                return true;
+
+            return false;
+       }
 
         private void _entry_add(string task_name) {
             string sanitized_name = Markup.escape_text(task_name);
@@ -153,15 +198,10 @@ namespace Hacer {
 
                     try {
                         // File Jazz
-                        FileIOStream iostream = data_file.open_readwrite();
-                        FileOutputStream os = iostream.output_stream as FileOutputStream;
-
                         Json.Generator generator = new Json.Generator() { pretty = true };;
                         generator.set_root(parser.get_root());
                         string str = generator.to_data(null);
                         data_file.replace_contents(str.data, null, false, FileCreateFlags.NONE, null);
-
-                        // os.write(str.data);
                     } catch (Error e) {
                         print(e.message);
                     }
@@ -187,7 +227,6 @@ namespace Hacer {
 		
 			try {
                 // File Jazz
-				FileIOStream iostream = data_file.open_readwrite();
 				Json.Generator generator = new Json.Generator() { pretty = true };;
 				generator.set_root(parser.get_root());
 				string str = generator.to_data(null);
@@ -212,8 +251,7 @@ namespace Hacer {
 		
 			try {
                 // File Jazz
-				FileIOStream iostream = data_file.open_readwrite();
-				Json.Generator generator = new Json.Generator() { pretty = true };;
+				Json.Generator generator = new Json.Generator() { pretty = true };
 				generator.set_root(parser.get_root());
 				string str = generator.to_data(null);
 				data_file.replace_contents(str.data, null, false, FileCreateFlags.NONE, null);
@@ -233,30 +271,29 @@ namespace Hacer {
 			
 			try {
                 // File Jazz
-				FileIOStream iostream = data_file.open_readwrite();
-				FileOutputStream os = iostream.output_stream as FileOutputStream;
-				Json.Generator generator = new Json.Generator() { pretty = true };;
+				Json.Generator generator = new Json.Generator() { pretty = true };
 				generator.set_root(parser.get_root());
 				string str = generator.to_data(null);
 				data_file.replace_contents(str.data, null, false, FileCreateFlags.NONE, null);
 			
-            	// os.write(str.data);
             } catch (Error e) {
                     print(e.message);
             }
 		}
 
-     
-
+	/**
+ 		* Adds a Agenda Row to the task_list.
+ 		* This method doesn't save the task
+ 	*/
         public void add_task(ActionAgendaRow agenda_row) {
-            agenda_row.removetask.connect(this.remove_task);
             task_list.append(agenda_row);
-            agenda_row.connect_parent_list_box();
- 			// connect signals
-            agenda_row.removetask.connect(remove_task);
- 			agenda_row.startask.connect(star_task);
- 			agenda_row.completetask.connect(complete_task);
-			agenda_row.changename.connect(change_task_name);
+
+ 			//Connecting signals
+ 			agenda_row.connect_parent_list_box();
+            agenda_row.removed_task.connect(remove_task);
+ 			agenda_row.starred_task.connect(star_task);
+ 			agenda_row.completed_task.connect(complete_task);
+			agenda_row.changed_name.connect(change_task_name);
         }
 
         private void _load_tasks_from_json() {
@@ -303,8 +340,21 @@ namespace Hacer {
 			string file_template = """{"Tasks" : []}""";
           	data_file.replace_contents(file_template.data, null, false, FileCreateFlags.NONE, null);
  			print("New file Created at %s from template\n", data_file.get_path());
- 		
         }
+
+        private void _window_shit(){
+			int height = this.get_allocated_height();
+			if(height > 620){
+				task_label_revealer.set_reveal_child(true);
+				task_window_title.set_title("Hacer");
+
+			} else {
+				task_label_revealer.set_reveal_child(false);
+			    task_window_title.set_title("Tasks");
+			}
+
+			//print("\n%d", height);
+		}
     }
 }
 
