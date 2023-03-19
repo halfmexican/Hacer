@@ -3,7 +3,8 @@ hacer_sources = [
   'application.vala',
   'window.vala',
   'actionAgendaRow.vala',
-  'utils.vala'
+  'utils.vala',
+  'HacerPreferencesWindow.vala'
 ]
 
 hacer_deps = [

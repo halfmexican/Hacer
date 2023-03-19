@@ -60,7 +60,7 @@ namespace Hacer {
 
         private void on_preferences_action () {
             message ("app.preferences action activated");
- 			var prefs = new Adw.PreferencesWindow (){
+ 			var prefs = new Hacer.PreferencesWindow (){
 
 
 			};

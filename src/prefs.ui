@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <template class="HacerPreferencesWindow" parent="AdwPreferencesWindow">
+    <property name="default-width">800</property>
+    <property name="default-height">600</property>
+    <property name="title">Hacer Preferences</property>
+    <child>
+      <object class="AdwPreferencesPage" id="page">
+        <child>
+          <object class="AdwPreferencesGroup" id="page_group">
+            <property name="title">User Interface </property>
+
+          </object>
+      </child>
+      </object>
+    </child>
+  </template>
+</interface>

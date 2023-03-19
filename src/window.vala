@@ -140,6 +140,7 @@ namespace Hacer {
         }
 
         // TODO:Use an ActionAgendaRow instead of passing a bunch of parameters like this
+        // TODO: Make a task Manager Class
         public void save_task(string task_name, int64 id, bool complete, bool starred) {
             try {
                 // File Jazz
@@ -357,4 +358,5 @@ namespace Hacer {
 		}
     }
 }
+
 

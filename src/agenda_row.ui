@@ -8,6 +8,7 @@
 		<property name="activatable">True</property>
 		<style>
 			<class name="title-4"/>
+		  <class name="agenda-row"/>
 		</style>
 		<child type="prefix">
 			<object class="GtkEditableLabel" id='edit_label'>
@@ -40,6 +41,18 @@
         <style>
              <class name="selection-mode"/>
         </style>
+			</object>
+		</child>
+	  <child type="prefix">
+			<object class="GtkImage" id='drag_handle'>
+				<property name="valign">center</property>
+				<property name="halign">center</property>
+				<property name="sensitive">True</property>
+				<property name="icon-name">drag-handle-symbolic</property>
+				<style>
+					<class name="flat"/>
+				  <class name="circular"/>
+				</style>
 			</object>
 		</child>
 		<child type="suffix">

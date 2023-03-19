@@ -2,12 +2,31 @@ text .strike{
   text-decoration: line-through;
 }
 
-.agenda-row{
+.agenda-row-editing{
   background-color: transparent;
 }
 
-.row-title{
+.agenda-row-hovering{
+  background-color: @view_bg_color;
+  box-shadow: 0px 0px 0px 1px inset @accent_color;
+}
+.agenda-row-drop{
+  background-color: @view_bg_color;
+  border-top-style: solid;
+  border-top-color: @accent_color;
+  border-top-width: 4px;
+  box-shadow: none;
+}
 
-margin-bottom: -6px;
+row.agenda-row box.header.horizontal, row.agenda-row-drop box.header.horizontal, row.agenda- box.header.horizontal{
+  margin-left: 3px;
+}
+
+row.agenda-row {
+  box-shadow: none;
+}
+
+list row box.header.horizontal box.horizontal.prefixes {
+  margin-left: 0px;
 
 }
