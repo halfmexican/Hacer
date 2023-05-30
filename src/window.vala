@@ -112,7 +112,7 @@ namespace Hacer {
        }
 
         private bool completed_filter(Gtk.ListBoxRow row){
-            var agenda_row = (ActionAgendaRow) row;
+            var agenda_row = (AgendaRow) row;
 
             if(agenda_row.completed)
                 return true;
@@ -121,7 +121,7 @@ namespace Hacer {
         }
 
         private bool starred_filter(Gtk.ListBoxRow row){
-            var agenda_row = row as ActionAgendaRow;
+            var agenda_row = row as AgendaRow;
 
             if(agenda_row.starred)
                 return true;
@@ -131,7 +131,7 @@ namespace Hacer {
 
         private void _entry_add(string task_name) {
             string sanitized_name = Markup.escape_text(task_name);
-            var agenda_row = new ActionAgendaRow(sanitized_name, next_id, false, false);
+            var agenda_row = new AgendaRow(sanitized_name, next_id, false, false);
             add_task(agenda_row);
             save_task(task_name, next_id, false, false);
             print("New Task: " + task_name + "  id: %s" + "\n", next_id.to_string());
@@ -139,7 +139,7 @@ namespace Hacer {
             next_id++;
         }
 
-        // TODO:Use an ActionAgendaRow instead of passing a bunch of parameters like this
+        // TODO:Use an AgendaRow instead of passing a bunch of parameters like this
         // TODO: Make a task Manager Class
         public void save_task(string task_name, int64 id, bool complete, bool starred) {
             try {
@@ -286,7 +286,7 @@ namespace Hacer {
  		* Adds a Agenda Row to the task_list.
  		* This method doesn't save the task
  	*/
-        public void add_task(ActionAgendaRow agenda_row) {
+        public void add_task(AgendaRow agenda_row) {
             task_list.append(agenda_row);
 
  			//Connecting signals
@@ -331,7 +331,7 @@ namespace Hacer {
                     }
                 }
 
-                var agenda_row = new ActionAgendaRow(task_name, obj_id, complete, starred);
+                var agenda_row = new AgendaRow(task_name, obj_id, complete, starred);
                 add_task(agenda_row);
             }
         }

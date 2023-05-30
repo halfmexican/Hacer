@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
 	<requires lib="gtk" version="4.0"/>
-	<template class="HacerActionAgendaRow" parent="AdwActionRow">
+	<template class="HacerAgendaRow" parent="AdwActionRow">
 		<property name="hexpand">true</property>
 		<property name="vexpand">true</property>
 		<property name="selectable">false</property>

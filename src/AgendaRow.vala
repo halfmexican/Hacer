@@ -1,19 +1,17 @@
 using Gtk, Adw, Pango;
 namespace Hacer {
     [GtkTemplate(ui = "/com/github/halfmexican/hacer/agenda_row.ui")]
-    public class ActionAgendaRow : Adw.ActionRow {
+    public class AgendaRow : Adw.ActionRow {
         [GtkChild] private unowned CheckButton check_button;
         [GtkChild] private unowned Button trash_button;
         [GtkChild] private unowned ToggleButton star_button;
         [GtkChild] private unowned Button edit_button;
         [GtkChild] private unowned EditableLabel edit_label;
-        [GtkChild] private unowned Image drag_handle;
 
-        File data_file = File.new_for_path(Environment.get_user_data_dir() + "/tasks.json");
         ListBox parent_list_box;
         Json.Parser parser;
         string task_name;
-        // TODO: getter and setter
+
         public bool starred;
         public bool completed;
         public int64 id;
@@ -25,7 +23,7 @@ namespace Hacer {
         public signal void completed_task(int64 id, bool completed);
         public signal void changed_name(int64 id, string name);
 
-        public ActionAgendaRow(string task_name, int64 id, bool completed, bool starred) {
+        public AgendaRow(string task_name, int64 id, bool completed, bool starred) {
 
             /////Initialization//////
             this.task_name = task_name;
@@ -35,7 +33,6 @@ namespace Hacer {
             this.completed = completed;
             this.id = id;
             parser = new Json.Parser();
-
             //////Connecting Signals//////
             this.activated.connect(show_editable_label);
             check_button.toggled.connect(complete_task);
@@ -44,71 +41,83 @@ namespace Hacer {
             edit_button.clicked.connect(show_editable_label);
             check_button.set_active(this.completed);
             star_button.set_active(this.starred);
+            edit_button.hide();
 
             //////Drag and Drop//////
             var drag = new Gtk.DragSource();
+            var allocation = Gtk.Allocation();
             this.add_controller(drag);
 
-            drag.prepare.connect ((_x, _y) => {
+            drag.prepare.connect((_x, _y) => {
                 _drag_x = (int) _x;
                 _drag_y = (int) _y;
 
-                Value val = Value (typeof (ActionAgendaRow));
-                val.set_object (this);
-                return new Gdk.ContentProvider.for_value (val);
+                this.get_allocation(out allocation);
+                Value val = Value(typeof (AgendaRow));
+                val.set_object(this);
+                return new Gdk.ContentProvider.for_value(val);
             });
 
-            drag.drag_begin.connect ((drag) => {
-                Gtk.Allocation allocation;
-                this.get_allocation (out allocation);
-                parent_list_box.drag_highlight_row (this);
+            drag.drag_begin.connect((drag) => {
                 parent_list_box.remove(this);
-                this.set_size_request (allocation.width, allocation.height);
-                this.set_state_flags (Gtk.StateFlags.DROP_ACTIVE, false);
-                var drag_icon = (Gtk.DragIcon) Gtk.DragIcon.get_for_drag (drag);
+                // this.set_state_flags (Gtk.StateFlags.DROP_ACTIVE, true);
+                var drag_icon = (Gtk.DragIcon) Gtk.DragIcon.get_for_drag(drag);
                 this.add_css_class("agenda-row-hovering");
                 this.remove_css_class("agenda-row");
+                this.set_size_request(allocation.width, allocation.height);
                 drag_icon.child = this;
-                drag.set_hotspot (_drag_x, _drag_y);
+                drag_icon.set_size_request(allocation.width, allocation.height);
+                drag.set_hotspot(_drag_x, _drag_y);
+            });
+
+            //If the row is drop outside of a drop target, dispose of the icon
+            //and append the row
+            drag.drag_end.connect((drag) => {
+                if (this.parent is Gtk.DragIcon) {
+                    var icon = this.parent;
+                    this.unparent();
+                    icon.dispose();
+                    parent_list_box.append(this);
+                    this.remove_css_class("agenda-row-hovering");
+                    this.add_css_class("agenda-row");
+                }
             });
 
             // drop controller
-            var drop = new Gtk.DropTarget (typeof (ActionAgendaRow), Gdk.DragAction.COPY);
-            this.add_controller (drop);
-            drop.drop.connect ((val, _x, _y) => {
+            var drop = new Gtk.DropTarget(typeof (AgendaRow), Gdk.DragAction.COPY);
+            this.add_controller(drop);
+            drop.drop.connect((val, _x, _y) => {
                 return drop_handler(val, _x, _y, this);
             });
 
             var drop_motion = new Gtk.DropControllerMotion();
             this.add_controller(drop_motion);
 
-            drop_motion.enter.connect ((_x, _y) => {
+            drop_motion.enter.connect((_x, _y) => {
                 this.add_css_class("agenda-row-drop");
                 this.remove_css_class("agenda-row");
             });
 
-            drop_motion.leave.connect (() => {
+            drop_motion.leave.connect(() => {
                 this.remove_css_class("agenda-row-drop");
                 this.add_css_class("agenda-row");
             });
-
         }
 
-        private bool drop_handler(Value val, double x, double y, ActionAgendaRow target_row) {
-            if (!val.holds (typeof (ActionAgendaRow))) return false;
-                int index = target_row.get_index();
-                ActionAgendaRow row = val.get_object() as ActionAgendaRow;
-                var icon = row.parent;
-                row.unparent();
-                row.remove_css_class("agenda-row-hovering");
-                target_row.remove_css_class("agenda-row-drop");
-                target_row.add_css_class("agenda-row");
-                row.add_css_class("agenda-row");
-                icon.dispose();
-                parent_list_box.insert(row, index);
+        private bool drop_handler(Value val, double x, double y, AgendaRow target_row) {
+            if (!val.holds(typeof (AgendaRow))) { return false; }
+            int target_index = target_row.get_index();
+            AgendaRow row = val.get_object() as AgendaRow;
+            var icon = row.parent;
+            row.unparent();
+            row.remove_css_class("agenda-row-hovering");
+            target_row.remove_css_class("agenda-row-drop");
+            target_row.add_css_class("agenda-row");
+            row.add_css_class("agenda-row");
+            icon.dispose();
+            parent_list_box.insert(row, target_index);
             return true;
         }
-
 
         public void connect_parent_list_box() {
             this.parent_list_box = this.get_parent() as ListBox;
@@ -122,10 +131,10 @@ namespace Hacer {
         }
 
         public void remove_task() {
+            this.unset_state_flags(Gtk.StateFlags.ACTIVE);
             this.removed_task(this.id);
             ListBox task_list = this.get_parent() as ListBox;
             task_list.remove(this);
-            // window.remove_task_id(this.id);
         }
 
         public void star_task() {
@@ -139,6 +148,7 @@ namespace Hacer {
                 starred = false;
             }
             this.starred_task(this.id, this.starred);
+            this.unset_state_flags(Gtk.StateFlags.ACTIVE);
         }
 
         public void show_editable_label() {
@@ -152,8 +162,9 @@ namespace Hacer {
 
             edit_label.set_text(unescaped_title);
             edit_label.show();
-            edit_label.grab_focus();
             edit_label.start_editing();
+            edit_label.grab_focus();
+
             // Connect the delegate signal so we know when to update title
             var gtk_text = edit_label.get_delegate() as Text;
             gtk_text.activate.connect(change_task_name);
@@ -177,13 +188,14 @@ namespace Hacer {
                 this.completed = true;
             }
 
+            this.unset_state_flags(Gtk.StateFlags.ACTIVE);
             this.completed_task(this.id, this.completed);
         }
 
         public void change_task_name() {
+            this.unset_state_flags(Gtk.StateFlags.ACTIVE);
             this.remove_css_class("agenda-row-editing");
             edit_label.hide();
-            edit_button.hide();
             task_name = Markup.escape_text(edit_label.get_text());
             this.changed_name(id, task_name);
             if (!check_button.get_active()) {
