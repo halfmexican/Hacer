@@ -4,11 +4,13 @@ text .strike{
 
 .agenda-row-editing{
   background-color: transparent;
+  margin-left: 0px;
 }
 
 .agenda-row-hovering{
   background-color: @view_bg_color;
   box-shadow: 0px 0px 0px 1px inset @accent_color;
+  margin-left: 0px;
 }
 .agenda-row-drop{
   background-color: @view_bg_color;
