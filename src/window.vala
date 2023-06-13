@@ -244,22 +244,22 @@ namespace Hacer {
             }
         }
 
-    public void star_task(int64 task_id, bool starred){
-        update_task_property(task_id, "starred", new Variant.boolean(starred));
-    }
+        public void star_task(int64 task_id, bool starred){
+            update_task_property(task_id, "starred", new Variant.boolean(starred));
+        }
 
-    public void complete_task(int64 task_id, bool complete) {
-        update_task_property(task_id, "complete", new Variant.boolean(complete));
-    }
+        public void complete_task(int64 task_id, bool complete) {
+            update_task_property(task_id, "complete", new Variant.boolean(complete));
+        }
 
-    public void change_task_name(int64 task_id, string task_name){
-        update_task_property(task_id, "task_name", new Variant.string(task_name));
-    }
+        public void change_task_name(int64 task_id, string task_name){
+            update_task_property(task_id, "task_name", new Variant.string(task_name));
+        }
 
-	/**
- 		* Adds a Agenda Row to the task_list.
- 		* This method doesn't save the task
- 	*/
+	    /**
+ 		    * Adds a Agenda Row to the task_list.
+ 		    * This method doesn't save the task
+ 	    */
         public void add_task(AgendaRow agenda_row) {
             task_list.append(agenda_row);
 
@@ -332,5 +332,3 @@ namespace Hacer {
 		}
     }
 }
-
-
