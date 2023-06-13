@@ -75,7 +75,7 @@ namespace Hacer {
             _load_tasks_from_json();
 
 			timeout_id = Timeout.add_full(1, 500, ()=>{
-				this._window_shit();
+				this._revealer_check();
 				return true;});
         }
 
@@ -139,7 +139,6 @@ namespace Hacer {
             next_id++;
         }
 
-        // TODO:Use an AgendaRow instead of passing a bunch of parameters like this
         // TODO: Make a task Manager Class
         public void save_task(string task_name, int64 id, bool complete, bool starred) {
             try {
@@ -343,7 +342,7 @@ namespace Hacer {
  			print("New file Created at %s from template\n", data_file.get_path());
         }
 
-        private void _window_shit(){
+        private void _revealer_check(){
 			int height = this.get_allocated_height();
 			if(height > 620){
 				task_label_revealer.set_reveal_child(true);
