@@ -33,6 +33,7 @@ namespace Hacer {
             this.completed = completed;
             this.id = id;
             parser = new Json.Parser();
+
             //////Connecting Signals//////
             this.activated.connect(show_editable_label);
             check_button.toggled.connect(complete_task);
@@ -48,9 +49,9 @@ namespace Hacer {
             var allocation = Gtk.Allocation();
             this.add_controller(drag);
 
-            drag.prepare.connect((_x, _y) => {
-                _drag_x = (int) _x;
-                _drag_y = (int) _y;
+            drag.prepare.connect((x, y) => {
+                _drag_x = (int) x;
+                _drag_y = (int) y;
 
                 this.get_allocation(out allocation);
                 Value val = Value(typeof (AgendaRow));
@@ -58,9 +59,8 @@ namespace Hacer {
                 return new Gdk.ContentProvider.for_value(val);
             });
 
-            drag.drag_begin.connect((drag) => {
+            drag.drag_begin.connect( (drag) => {
                 parent_list_box.remove(this);
-                // this.set_state_flags (Gtk.StateFlags.DROP_ACTIVE, true);
                 var drag_icon = (Gtk.DragIcon) Gtk.DragIcon.get_for_drag(drag);
                 this.add_css_class("agenda-row-hovering");
                 this.remove_css_class("agenda-row");
@@ -70,7 +70,7 @@ namespace Hacer {
                 drag.set_hotspot(_drag_x, _drag_y);
             });
 
-            //If the row is drop outside of a drop target, dispose of the icon
+            //If the row is dropped outside of a drop target, dispose of the icon
             //and append the row
             drag.drag_end.connect((drag) => {
                 if (this.parent is Gtk.DragIcon) {
