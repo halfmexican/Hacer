@@ -208,78 +208,53 @@ namespace Hacer {
                 }
             }
         }
-        
-        public void star_task(int64 task_id, bool starred){
-		 
-            // Add our Task Object to the Json Array that exists in our file
+
+        private void update_task_property(int64 task_id, string property_name, Variant property_value) {
+            // Load our Task Object to the Json Array that exists in our file
             Json.Parser parser = new Json.Parser();
             parser.load_from_file(data_file.get_path());
- 
- 			//Get the array of tasks from the JSON data
+
+            // Get the array of tasks from the JSON data
             array = parser.get_root().get_object().get_array_member("Tasks");
- 			
- 			//retrieve the object index from the array based on id
- 			uint obj_index  = Utils.binary_search_json_array(array, task_id);
-			
-			//Get the task object and update its "starred" property
-			Json.Object task_obj = array.get_element(obj_index).get_object();
-			task_obj.set_boolean_member("starred", starred);
-		
-			try {
-                // File Jazz
-				Json.Generator generator = new Json.Generator() { pretty = true };;
-				generator.set_root(parser.get_root());
-				string str = generator.to_data(null);
-				data_file.replace_contents(str.data, null, false, FileCreateFlags.NONE, null);
-			
-            } catch (Error e) {
-                    print(e.message);
+
+            // Retrieve the object index from the array based on id
+            uint obj_index  = Utils.binary_search_json_array(array, task_id);
+
+            // Get the task object and update its specified property
+            Json.Object task_obj = array.get_element(obj_index).get_object();
+    
+            // Check the variant type and set the property accordingly
+            if (property_value.is_of_type (VariantType.BOOLEAN)) {
+                task_obj.set_boolean_member(property_name, property_value.get_boolean());
+            } else if (property_value.is_of_type (VariantType.STRING)) {
+                task_obj.set_string_member(property_name, property_value.get_string());
+            } else {
+                print("Unsupported property type: %s\n", property_value.get_type_string());
+                return;
             }
-		}
-		
-         public void complete_task(int64 task_id, bool complete) {
-			// Add our Task Object to the Json Array that exists in our file
-            Json.Parser parser = new Json.Parser();
-            parser.load_from_file(data_file.get_path());
- 			
-            array = parser.get_root().get_object().get_array_member("Tasks");
- 			
- 			uint obj_index  = Utils.binary_search_json_array(array, task_id);
-			
-			Json.Object task_obj = array.get_element(obj_index).get_object();
-			task_obj.set_boolean_member("complete", complete);
-		
-			try {
-                // File Jazz
-				Json.Generator generator = new Json.Generator() { pretty = true };
-				generator.set_root(parser.get_root());
-				string str = generator.to_data(null);
-				data_file.replace_contents(str.data, null, false, FileCreateFlags.NONE, null);
+
+            try {
+                // Write updated data back to file
+                Json.Generator generator = new Json.Generator() { pretty = true };
+                generator.set_root(parser.get_root());
+                string str = generator.to_data(null);
+                data_file.replace_contents(str.data, null, false, FileCreateFlags.NONE, null);
             } catch (Error e) {
-                    print(e.message);
+                print("Failed to update task property: " + e.message);
             }
-      	}
-      	
-      	public void change_task_name(int64 task_id, string task_name){
-			Json.Parser parser = new Json.Parser();
-            parser.load_from_file(data_file.get_path());
-            array = parser.get_root().get_object().get_array_member("Tasks");
-			uint obj_index = Utils.binary_search_json_array(array, task_id);
-			
-			Json.Object task_obj = array.get_element(obj_index).get_object();
-			task_obj.set_string_member("task_name", task_name);
-			
-			try {
-                // File Jazz
-				Json.Generator generator = new Json.Generator() { pretty = true };
-				generator.set_root(parser.get_root());
-				string str = generator.to_data(null);
-				data_file.replace_contents(str.data, null, false, FileCreateFlags.NONE, null);
-			
-            } catch (Error e) {
-                    print(e.message);
-            }
-		}
+        }
+
+    public void star_task(int64 task_id, bool starred){
+        update_task_property(task_id, "starred", new Variant.boolean(starred));
+    }
+
+    public void complete_task(int64 task_id, bool complete) {
+        update_task_property(task_id, "complete", new Variant.boolean(complete));
+    }
+
+    public void change_task_name(int64 task_id, string task_name){
+        update_task_property(task_id, "task_name", new Variant.string(task_name));
+    }
 
 	/**
  		* Adds a Agenda Row to the task_list.
