@@ -9,6 +9,7 @@ hacer_sources = [
 
 hacer_deps = [
   dependency('gtk4'),
+  dependency('gio-2.0'),
   dependency('libadwaita-1'),
   dependency('json-glib-1.0')
 ]

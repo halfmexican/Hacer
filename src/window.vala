@@ -316,7 +316,8 @@ namespace Hacer {
           	data_file.replace_contents(file_template.data, null, false, FileCreateFlags.NONE, null);
  			print("New file Created at %s from template\n", data_file.get_path());
         }
-
+        
+        //TODO: Actually dynamicly set title
         private void _revealer_check(){
 			int height = this.get_allocated_height();
 			if(height > 620){
@@ -327,8 +328,6 @@ namespace Hacer {
 				task_label_revealer.set_reveal_child(false);
 			    task_window_title.set_title("Tasks");
 			}
-
-			//print("\n%d", height);
 		}
     }
 }

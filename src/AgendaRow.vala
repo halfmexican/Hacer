@@ -23,7 +23,7 @@ namespace Hacer {
         public signal void completed_task(int64 id, bool completed);
         public signal void changed_name(int64 id, string name);
 
-        public AgendaRow(string task_name, int64 id, bool completed, bool starred) {
+        public AgendaRow (string task_name, int64 id, bool completed, bool starred) {
 
             /////Initialization//////
             this.task_name = task_name;
@@ -35,6 +35,7 @@ namespace Hacer {
             parser = new Json.Parser();
 
             //////Connecting Signals//////
+            Application.settings.changed["use-circular-checkboxes"].connect(() => {reload_checkboxes();});
             this.activated.connect(show_editable_label);
             check_button.toggled.connect(complete_task);
             trash_button.clicked.connect(remove_task);
@@ -48,11 +49,17 @@ namespace Hacer {
             var drag = new Gtk.DragSource();
             var allocation = Gtk.Allocation();
             this.add_controller(drag);
+            
+            ///Construction Options/////
+            if (Application.settings.get_boolean("use-circular-checkboxes")) {
+                this.check_button.add_css_class("selection-mode");
+            } else {
+                this.check_button.remove_css_class("selection-mode");
+            }
 
             drag.prepare.connect((x, y) => {
                 _drag_x = (int) x;
                 _drag_y = (int) y;
-
                 this.get_allocation(out allocation);
                 Value val = Value(typeof (AgendaRow));
                 val.set_object(this);
@@ -90,6 +97,7 @@ namespace Hacer {
                 return drop_handler(val, _x, _y, this);
             });
 
+            //TODO: Don't Use this, just use the drop target
             var drop_motion = new Gtk.DropControllerMotion();
             this.add_controller(drop_motion);
 
@@ -102,14 +110,27 @@ namespace Hacer {
                 this.remove_css_class("agenda-row-drop");
                 this.add_css_class("agenda-row");
             });
+
         }
 
+        private void reload_checkboxes (){
+               ///Construction Options/////
+            if (Application.settings.get_boolean("use-circular-checkboxes")) {
+                this.check_button.add_css_class("selection-mode");
+            } else {
+                this.check_button.remove_css_class("selection-mode");
+            }
+        }
+
+        //TODO:FIX width reqeust
         private bool drop_handler(Value val, double x, double y, AgendaRow target_row) {
             if (!val.holds(typeof (AgendaRow))) { return false; }
             int target_index = target_row.get_index();
             AgendaRow row = val.get_object() as AgendaRow;
             var icon = row.parent;
             row.unparent();
+
+            row.width_request = -1;
             row.remove_css_class("agenda-row-hovering");
             target_row.remove_css_class("agenda-row-drop");
             target_row.add_css_class("agenda-row");
@@ -125,7 +146,7 @@ namespace Hacer {
         }
 
         public void check_selection(ListBoxRow? row) {
-            if (row != this) {
+            if (row != this) {         
                 change_task_name();
             }
         }
