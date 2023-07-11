@@ -20,6 +20,8 @@
 
 namespace Hacer {
     public class Application : Adw.Application {
+        public static GLib.Settings settings = new GLib.Settings ("com.github.halfmexican.hacer");
+
         public Application () {
             Object (application_id: "com.github.halfmexican.hacer", flags: ApplicationFlags.FLAGS_NONE);
         }
@@ -61,7 +63,7 @@ namespace Hacer {
         private void on_preferences_action () {
             message ("app.preferences action activated");
  			var prefs = new Hacer.PreferencesWindow (){
-
+                transient_for = this.active_window,
 
 			};
 

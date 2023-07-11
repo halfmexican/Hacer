@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <requires lib="gtk" version="4.0"/>
+  <requires lib="gtk" version="4.0" />
   <template class="HacerPreferencesWindow" parent="AdwPreferencesWindow">
     <property name="default-width">800</property>
     <property name="default-height">600</property>
@@ -9,10 +9,22 @@
       <object class="AdwPreferencesPage" id="page">
         <child>
           <object class="AdwPreferencesGroup" id="page_group">
-            <property name="title">User Interface </property>
-
+            <property name="title">User Interface</property>
+            <child>
+              <object class="AdwActionRow">
+                <property name="title">Use circular checkboxes</property>
+                <property name="activatable-widget">circular_checkboxes_switch</property>
+                <child>
+                  <object class="GtkSwitch" id="circular_checkboxes_switch">
+                    <property name="active">True</property>
+                    <property name="valign">center</property>
+                    <property name="halign">center</property>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
-      </child>
+        </child>
       </object>
     </child>
   </template>

@@ -26,7 +26,7 @@
 			<object class="GtkCheckButton" id='check_button'>
 				<property name="halign">start</property>
         <style>
-             <class name="selection-mode"/>
+            <!-- <class name="selection-mode"/> -->
         </style>
 			</object>
 		</child>
