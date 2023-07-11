@@ -38,7 +38,8 @@
 				<property name="icon-name">drag-handle-symbolic</property>
 				<style>
 					<class name="flat"/>
-				  <class name="circular"/>
+				  	<class name="circular"/>
+					<class name="dim-label"/>
 				</style>
 			</object>
 		</child>
