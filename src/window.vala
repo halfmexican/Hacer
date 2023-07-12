@@ -263,7 +263,7 @@ namespace Hacer {
         public void add_task(AgendaRow agenda_row) {
             task_list.append(agenda_row);
 
- 			//Connecting signals
+ 			// Connecting signals
  			agenda_row.connect_parent_list_box();
             agenda_row.removed_task.connect(remove_task);
  			agenda_row.starred_task.connect(star_task);
@@ -276,7 +276,8 @@ namespace Hacer {
             bool complete = false;
             bool starred = false;
             int64 obj_id = 0;
-            //Don't fucking ask me
+
+            // Parsing Json
             Json.Parser parser = new Json.Parser();
             parser.load_from_file(data_file.get_path());
             Json.Object root_object = parser.get_root().get_object();
