@@ -17,15 +17,16 @@ namespace Hacer {
         public int64 id;
         private int _drag_x;
         private int _drag_y;
-
-        public signal void removed_task(int64 id);
-        public signal void starred_task(int64 id, bool starred);
-        public signal void completed_task(int64 id, bool completed);
-        public signal void changed_name(int64 id, string name);
+        
+        // Define Signals
+        public signal void removed_task (int64 id);
+        public signal void starred_task (int64 id, bool starred);
+        public signal void completed_task (int64 id, bool completed);
+        public signal void changed_name (int64 id, string name);
 
         public AgendaRow (string task_name, int64 id, bool completed, bool starred) {
 
-            /////Initialization//////
+            // Initialization
             this.task_name = task_name;
             this.set_title(task_name);
             this.edit_label.set_text(this.task_name);
@@ -34,7 +35,7 @@ namespace Hacer {
             this.id = id;
             parser = new Json.Parser();
 
-            //////Connecting Signals//////
+            // Connecting Signals
             Application.settings.changed["use-circular-checkboxes"].connect(() => {reload_checkboxes();});
             this.activated.connect(show_editable_label);
             check_button.toggled.connect(complete_task);
@@ -45,12 +46,12 @@ namespace Hacer {
             star_button.set_active(this.starred);
             edit_button.hide();
 
-            //////Drag and Drop//////
+            // Drag and Drop
             var drag = new Gtk.DragSource();
             var allocation = Gtk.Allocation();
             this.add_controller(drag);
             
-            ///Construction Options/////
+            // Construction Options
             if (Application.settings.get_boolean("use-circular-checkboxes")) {
                 this.check_button.add_css_class("selection-mode");
             } else {
@@ -77,8 +78,8 @@ namespace Hacer {
                 drag.set_hotspot(_drag_x, _drag_y);
             });
 
-            //If the row is dropped outside of a drop target, dispose of the icon
-            //and append the row
+            // If the row is dropped outside of a drop target, dispose of the icon
+            // and append the row
             drag.drag_end.connect((drag) => {
                 if (this.parent is Gtk.DragIcon) {
                     var icon = this.parent;
@@ -97,7 +98,7 @@ namespace Hacer {
                 return drop_handler(val, _x, _y, this);
             });
 
-            //TODO: Don't Use this, just use the drop target
+            // TODO: Don't Use this, just use the drop target
             var drop_motion = new Gtk.DropControllerMotion();
             this.add_controller(drop_motion);
 
@@ -122,7 +123,7 @@ namespace Hacer {
             }
         }
 
-        //TODO:FIX width reqeust
+        // TODO:FIX width reqeust
         private bool drop_handler(Value val, double x, double y, AgendaRow target_row) {
             if (!val.holds(typeof (AgendaRow))) { return false; }
             int target_index = target_row.get_index();
