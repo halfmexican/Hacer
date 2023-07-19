@@ -20,7 +20,7 @@ text .strike{
   box-shadow: none;
 }
 
-row.agenda-row box.header.horizontal, row.agenda-row-drop box.header.horizontal, row.agenda- box.header.horizontal{
+row.agenda-row box.header.horizontal, row.agenda-row-drop box.header.horizontal, row.agenda-editing box.header.horizontal {
   margin-left: 3px;
 }
 
