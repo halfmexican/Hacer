@@ -28,7 +28,7 @@ namespace Hacer {
 
             // Initialization
             this.task_name = task_name;
-            this.set_title(task_name);
+            this.set_title(Markup.escape_text(task_name));
             this.edit_label.set_text(this.task_name);
             this.starred = starred;
             this.completed = completed;
@@ -176,13 +176,7 @@ namespace Hacer {
         public void show_editable_label() {
             this.add_css_class("agenda-row-editing");
             this.set_title(" ");
-            string unescaped_title = this.task_name.replace("&amp;", "&")
-                 .replace("&lt;", "<")
-                 .replace("&gt;", ">")
-                 .replace("&quot;", "\"")
-                 .replace("&apos;", "\'");
-
-            edit_label.set_text(unescaped_title);
+            edit_label.set_text(this.task_name);
             edit_label.show();
             edit_label.start_editing();
             edit_label.grab_focus();
@@ -218,18 +212,18 @@ namespace Hacer {
             this.unset_state_flags(Gtk.StateFlags.ACTIVE);
             this.remove_css_class("agenda-row-editing");
             edit_label.hide();
-            task_name = Markup.escape_text(edit_label.get_text());
+            this.set_title(Markup.escape_text(task_name));
             this.changed_name(id, task_name);
             if (!check_button.get_active()) {
-                this.set_title(task_name);
+                this.set_title(Markup.escape_text(task_name));
             } else {
-                this.set_title(task_name);
+                this.set_title(Markup.escape_text(task_name));
                 this.strikethrough();
             }
         }
 
         public void strikethrough() {
-            this.set_title("<s>" + task_name + "</s>");
+            this.set_title("<s>" + Markup.escape_text(task_name) + "</s>");
         }
     }
 }

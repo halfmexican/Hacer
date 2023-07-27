@@ -130,8 +130,7 @@ namespace Hacer {
        }
 
         private void _entry_add(string task_name) {
-            string sanitized_name = Markup.escape_text(task_name);
-            var agenda_row = new AgendaRow(sanitized_name, next_id, false, false);
+            var agenda_row = new AgendaRow(task_name, next_id, false, false);
             add_task(agenda_row);
             save_task(task_name, next_id, false, false);
             print("New Task: " + task_name + "  id: %s" + "\n", next_id.to_string());
@@ -294,8 +293,7 @@ namespace Hacer {
                             next_id = (1 + obj_id);
                         break;
                     case "task_name":
- 						string temp = obj.get_string_member("task_name");
- 						task_name =  Markup.escape_text(temp);
+ 						task_name = obj.get_string_member("task_name"); ;
  						break;
                     case "complete":
                         complete = obj.get_boolean_member("complete");
