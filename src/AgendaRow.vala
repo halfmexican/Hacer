@@ -9,7 +9,6 @@ namespace Hacer {
         [GtkChild] private unowned EditableLabel edit_label;
 
         ListBox parent_list_box;
-        Json.Parser parser;
         string task_name;
 
         public bool starred;
@@ -33,7 +32,6 @@ namespace Hacer {
             this.starred = starred;
             this.completed = completed;
             this.id = id;
-            parser = new Json.Parser();
 
             // Connecting Signals
             Application.settings.changed["use-circular-checkboxes"].connect(() => {reload_checkboxes();});
@@ -53,9 +51,9 @@ namespace Hacer {
             
             // Construction Options
             if (Application.settings.get_boolean("use-circular-checkboxes")) {
-                this.check_button.add_css_class("selection-mode");
+                check_button.add_css_class("selection-mode");
             } else {
-                this.check_button.remove_css_class("selection-mode");
+                check_button.remove_css_class("selection-mode");
             }
 
             drag.prepare.connect((x, y) => {
@@ -115,26 +113,26 @@ namespace Hacer {
         }
 
         private void reload_checkboxes (){
-               ///Construction Options/////
             if (Application.settings.get_boolean("use-circular-checkboxes")) {
-                this.check_button.add_css_class("selection-mode");
+                check_button.add_css_class("selection-mode");
             } else {
-                this.check_button.remove_css_class("selection-mode");
+                check_button.remove_css_class("selection-mode");
             }
         }
 
-        // TODO:FIX width reqeust
         private bool drop_handler(Value val, double x, double y, AgendaRow target_row) {
             if (!val.holds(typeof (AgendaRow))) { return false; }
             int target_index = target_row.get_index();
             AgendaRow row = val.get_object() as AgendaRow;
             var icon = row.parent;
-            row.unparent();
 
-            row.width_request = -1;
+            row.unparent();
+            row.width_request = -1; // Do not remove
             row.remove_css_class("agenda-row-hovering");
+
             target_row.remove_css_class("agenda-row-drop");
             target_row.add_css_class("agenda-row");
+
             row.add_css_class("agenda-row");
             icon.dispose();
             parent_list_box.insert(row, target_index);
@@ -142,8 +140,8 @@ namespace Hacer {
         }
 
         public void connect_parent_list_box() {
-            this.parent_list_box = this.get_parent() as ListBox;
-            this.parent_list_box.row_activated.connect(check_selection);
+            parent_list_box = this.get_parent() as ListBox;
+            parent_list_box.row_activated.connect(check_selection);
         }
 
         public void check_selection(ListBoxRow? row) {
@@ -154,7 +152,7 @@ namespace Hacer {
 
         public void remove_task() {
             this.unset_state_flags(Gtk.StateFlags.ACTIVE);
-            this.removed_task(this.id);
+            this.removed_task(id);
             ListBox task_list = this.get_parent() as ListBox;
             task_list.remove(this);
         }
@@ -169,14 +167,14 @@ namespace Hacer {
                 star_button.remove_css_class("suggested-action");
                 starred = false;
             }
-            this.starred_task(this.id, this.starred);
+            this.starred_task(id, starred);
             this.unset_state_flags(Gtk.StateFlags.ACTIVE);
         }
 
         public void show_editable_label() {
             this.add_css_class("agenda-row-editing");
-            this.set_title(" ");
-            edit_label.set_text(this.task_name);
+            this.set_title("");
+            edit_label.set_text(task_name);
             edit_label.show();
             edit_label.start_editing();
             edit_label.grab_focus();
@@ -191,13 +189,13 @@ namespace Hacer {
             // clicks on the check button while editing text
             if (edit_label.visible) {
                 edit_label.hide();
-                this.set_title(task_name);
+                this.set_title(Markup.escape_text(task_name));
                 this.strikethrough();
                 return;
             }
 
             if (!check_button.get_active()) {
-                this.set_title(task_name);
+                this.set_title(Markup.escape_text(task_name));
                 this.completed = false;
             } else {
                 this.strikethrough();
@@ -205,15 +203,17 @@ namespace Hacer {
             }
 
             this.unset_state_flags(Gtk.StateFlags.ACTIVE);
-            this.completed_task(this.id, this.completed);
+            this.completed_task(id, completed);
         }
 
         public void change_task_name() {
             this.unset_state_flags(Gtk.StateFlags.ACTIVE);
             this.remove_css_class("agenda-row-editing");
+            task_name = edit_label.text;
             edit_label.hide();
-            this.set_title(Markup.escape_text(task_name));
+            
             this.changed_name(id, task_name);
+            
             if (!check_button.get_active()) {
                 this.set_title(Markup.escape_text(task_name));
             } else {
