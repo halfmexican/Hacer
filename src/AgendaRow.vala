@@ -129,12 +129,14 @@ namespace Hacer {
             int target_index = target_row.get_index();
             AgendaRow row = val.get_object() as AgendaRow;
             var icon = row.parent;
+            
             row.unparent();
-
-            row.width_request = -1;
+            row.width_request = -1; // Do not remove
             row.remove_css_class("agenda-row-hovering");
+
             target_row.remove_css_class("agenda-row-drop");
             target_row.add_css_class("agenda-row");
+
             row.add_css_class("agenda-row");
             icon.dispose();
             parent_list_box.insert(row, target_index);
@@ -175,7 +177,7 @@ namespace Hacer {
 
         public void show_editable_label() {
             this.add_css_class("agenda-row-editing");
-            this.set_title(" ");
+            this.set_title("");
             edit_label.set_text(this.task_name);
             edit_label.show();
             edit_label.start_editing();
@@ -211,8 +213,8 @@ namespace Hacer {
         public void change_task_name() {
             this.unset_state_flags(Gtk.StateFlags.ACTIVE);
             this.remove_css_class("agenda-row-editing");
+            this.task_name = edit_label.text;
             edit_label.hide();
-            this.set_title(Markup.escape_text(task_name));
             this.changed_name(id, task_name);
             if (!check_button.get_active()) {
                 this.set_title(Markup.escape_text(task_name));
