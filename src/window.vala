@@ -46,7 +46,7 @@ namespace Hacer {
 
         public Window(Gtk.Application app) {
             GLib.Object(application: app);
-            //////Connect Signals//////
+            // Connect Signals
             task_entry.activate.connect(on_enter_released);
             leaflet_forward.clicked.connect(show_task_view);
             leaflet_back.clicked.connect(show_list_view);
@@ -54,7 +54,7 @@ namespace Hacer {
             completed_tasks_row.activated.connect(show_completed_tasks);
             starred_tasks_row.activated.connect(show_starred_tasks);
 
-            /////Initial Set-up//////
+            // Initial Set-up
             // Default to showing tasks
             adw_leaflet.set_visible_child(task_view);
             // Default to show all tasks at startup
@@ -316,7 +316,7 @@ namespace Hacer {
  			print("New file Created at %s from template\n", data_file.get_path());
         }
         
-        //TODO: Actually dynamicly set title
+        // TODO: Actually dynamicly set title
         private void _revealer_check(){
 			int height = this.get_allocated_height();
 			if(height > 620){
